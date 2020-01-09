@@ -1,1 +1,6 @@
-changelog
+# GoLand
+.idea/
+
+# Binaries
+/changelog
+/changelog.exe

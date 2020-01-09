@@ -7,65 +7,33 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"sort"
 
-	"github.com/go-yaml/yaml"
 	"github.com/google/go-github/github"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-var cmdContributors = cli.Command{
+var cmdContributors = &cli.Command{
 	Name:        "contributors",
-	Usage:       "generate contributors list of the milestone",
-	Description: `generate contributors list of the milestone`,
+	Usage:       "generate contributors list",
+	Description: "generate contributors list",
 	Action:      runContributors,
-	Flags: []cli.Flag{
-		cli.StringFlag{
-			Name:  "milestone, m",
-			Usage: "Generate which tag from",
-		},
-		cli.StringFlag{
-			Name:  "config, c",
-			Usage: "Specify a config file",
-		},
-	},
 }
 
-func runContributors(cmd *cli.Context) {
-	milestone := cmd.String("milestone")
-	if milestone == "" {
-		fmt.Println("Please specify a milestone")
-		return
-	}
-
-	var err error
-	var configContent []byte
-	if cmd.String("config") == "" {
-		configContent = defaultConfig
-	} else {
-		configContent, err = ioutil.ReadFile(cmd.String("config"))
-		if err != nil {
-			fmt.Printf("Load config from file %s failed: %v\n", cmd.String("config"), err)
-			return
-		}
-	}
-
-	var config Config
-	err = yaml.Unmarshal(configContent, &config)
+func runContributors(cmd *cli.Context) error {
+	config, err := LoadConfig()
 	if err != nil {
-		fmt.Printf("Unmarshal config content failed: %v\n", err)
-		return
+		return err
 	}
 
 	client := github.NewClient(nil)
 	ctx := context.Background()
 
-	var contributorsMap = make(map[string]bool)
-	var query = fmt.Sprintf(`repo:%s is:merged milestone:"%s"`, config.Repo, milestone)
-	var p = 1
-	var perPage = 100
+	contributorsMap := make(map[string]bool)
+	query := fmt.Sprintf(`repo:%s is:merged milestone:"%s"`, config.Repo, milestone)
+	p := 1
+	perPage := 100
 	for {
 		result, _, err := client.Search.Issues(ctx, query, &github.SearchOptions{
 			ListOptions: github.ListOptions{
@@ -97,4 +65,6 @@ func runContributors(cmd *cli.Context) {
 	for _, contributor := range contributors {
 		fmt.Printf("* [@%s](https://github.com/%s)\n", contributor, contributor)
 	}
+
+	return nil
 }

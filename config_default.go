@@ -1,11 +1,17 @@
+package main
+
+func init() {
+	defaultConfig = []byte(`# The full repository name
 repo: go-gitea/gitea
+
+# Changelog groups and which labeled PRs to add to each group
 groups:
   - 
     name: BREAKING
     labels:
       - kind/breaking
   - 
-    name: FEATURE
+    name: FEATURES
     labels:
       - kind/feature
   -
@@ -13,7 +19,7 @@ groups:
     labels:
       - kind/bug
   - 
-    name: ENHANCEMENT
+    name: ENHANCEMENTS
     labels:
       - kind/enhancement
       - kind/refactor
@@ -42,3 +48,7 @@ groups:
   - 
     name: MISC
     default: true
+
+# regex indicating which labels to skip for the changelog
+skip-labels: skip-changelog|backport\/.+`)
+}

@@ -1,25 +1,40 @@
-# Changelog - Generate changelog of gitea repository
+# Changelog
+A changelog generator for Gitea
 
-[![Build Status](https://drone.gitea.io/api/badges/go-gitea/changelog/status.svg)](https://drone.gitea.io/go-gitea/changelog)
+[![Build Status](https://drone.gitea.com/api/badges/gitea/changelog/status.svg)](https://drone.gitea.com/gitea/changelog)
 
 ## Purpose
 
-This repo currently is part of Gitea. The purpose it to generate changelog when writing release notes. If a project management like Gitea, it could use this tool, otherwise please find another. The tool generate changelog depends on your PRs on the milestone and the labels of a PR.
+This repo is currently part of Gitea. The purpose of it is to generate a changelog when writing release notes.  
+This project was made for Gitea, so while you are free to use it in your own projects, it is subject to change with Gitea.  
+This tool generates a changelog from PRs based on their milestone and labels.
 
 ## Installation
 
 ```
-go get github.com/go-gitea/changelog
+go get gitea.com/gitea/changelog
 ```
 
 ## Configuration
 
-See the [changelog.yml.example](changelog.yml.example) example file.
+See the [changelog.example.yml](changelog.example.yml) example file.
 
 ## Usage
 
+#### Changelog Entries
 ```
-changelog -m=1.2.0 -c=/path/to/my_config_file
+changelog -m=1.11.0 -c=/path/to/my_config_file generate
+```
+
+#### Contributors List
+```
+changelog -m=1.11.0 -c=/path/to/my_config_file contributors
+```
+
+## Building
+```
+go generate ./...
+go build
 ```
 
 ## Contributing
@@ -28,9 +43,9 @@ Fork -> Patch -> Push -> Pull Request
 
 ## Authors
 
-* [Maintainers](https://github.com/orgs/go-gitea/people)
-* [Contributors](https://github.com/go-gitea/changelog/graphs/contributors)
+* [Maintainers](https://gitea.com/org/gitea/members)
+* [Contributors](https://gitea.com/gitea/changelog/commits/branch/master)<!-- FIXME when contributors page works -->
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/go-gitea/changelog/blob/master/LICENSE) file for the full license text.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for the full license text.
