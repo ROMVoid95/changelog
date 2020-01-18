@@ -12,7 +12,7 @@ This tool generates a changelog from PRs based on their milestone and labels.
 ## Installation
 
 ```
-go get gitea.com/gitea/changelog
+go get code.gitea.io/changelog
 ```
 
 ## Configuration
