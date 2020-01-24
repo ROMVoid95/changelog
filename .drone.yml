@@ -12,7 +12,7 @@ steps:
   pull: always
   image: golang:1.13
   environment:
-    GOPROXY: https://goproxy.cn
+    GOPROXY: https://goproxy.cn,direct
   commands:
   - go test -race
 
