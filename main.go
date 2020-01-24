@@ -4,21 +4,20 @@
 
 package main
 
+//go:generate go run changelog.example.go
+//go:generate go fmt ./...
+
 import (
 	"fmt"
 	"os"
 
+	"code.gitea.io/changelog/cmd"
 	"github.com/urfave/cli/v2"
 )
 
 const (
 	// Version of changelog
 	Version = "0.2"
-)
-
-var (
-	milestone  string
-	configPath string
 )
 
 func main() {
@@ -32,18 +31,36 @@ func main() {
 				Aliases:     []string{"m"},
 				Usage:       "Targeted milestone",
 				Required:    true,
-				Destination: &milestone,
+				Destination: &cmd.MilestoneFlag,
 			},
 			&cli.StringFlag{
 				Name:        "config",
 				Aliases:     []string{"c"},
 				Usage:       "Specify a config file",
-				Destination: &configPath,
+				Destination: &cmd.ConfigPathFlag,
+			},
+			&cli.StringFlag{
+				Name:        "token",
+				Aliases:     []string{"t"},
+				Usage:       "Access token for private repositories/instances",
+				Destination: &cmd.TokenFlag,
+			},
+			&cli.BoolFlag{
+				Name:        "details",
+				Aliases:     []string{"d"},
+				Usage:       "Generate detail lists instead of long lists",
+				Destination: &cmd.DetailsFlag,
+			},
+			&cli.Int64Flag{
+				Name:        "after",
+				Aliases:     []string{"a"},
+				Usage:       "Only select PRs after a given index (continuing a previous changelog)",
+				Destination: &cmd.AfterFlag,
 			},
 		},
 		Commands: []*cli.Command{
-			cmdGenerate,
-			cmdContributors,
+			cmd.Generate,
+			cmd.Contributors,
 		},
 	}
 

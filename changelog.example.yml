@@ -1,6 +1,13 @@
 # The full repository name
 repo: go-gitea/gitea
 
+# Service type (gitea or github)
+service: github
+
+# Base URL for Gitea instance if using gitea service type (optional)
+# Default: https://gitea.com
+base-url:
+
 # Changelog groups and which labeled PRs to add to each group
 groups:
   - 

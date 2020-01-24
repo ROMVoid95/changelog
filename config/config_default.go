@@ -1,8 +1,19 @@
-package main
+// Copyright 2020 The Gitea Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
+
+package config
 
 func init() {
 	defaultConfig = []byte(`# The full repository name
 repo: go-gitea/gitea
+
+# Service type (gitea or github)
+service: github
+
+# Base URL for Gitea instance if using gitea service type (optional)
+# Default: https://gitea.com
+base-url:
 
 # Changelog groups and which labeled PRs to add to each group
 groups:
