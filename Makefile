@@ -2,10 +2,14 @@ DIST := dist
 GO ?= go
 
 ifneq ($(DRONE_TAG),)
-	SHORT_VERSION ?= $(subst v,,$(DRONE_TAG))
-	LONG_VERSION ?= $(SHORT_VERSION)
+	VERSION ?= $(subst v,,$(DRONE_TAG))
+	LONG_VERSION ?= $(VERSION)
 else
-	SHORT_VERSION ?= $(shell git describe --tags --always --abbrev=0 | sed 's/-/+/' | sed 's/^v//')
+	ifneq ($(DRONE_BRANCH),)
+		VERSION ?= $(subst release/v,,$(DRONE_BRANCH))
+	else
+		VERSION ?= master
+	endif
 	LONG_VERSION ?= $(shell git describe --tags --always | sed 's/-/+/' | sed 's/^v//')
 endif
 
@@ -34,35 +38,48 @@ fmt:
 .PHONY: release
 release: release-dirs check-xgo release-windows release-linux release-darwin release-compress release-check
 
-.PHONY: release-dirs
-release-dirs:
-	mkdir -p $(DIST)/
-
 .PHONY: check-xgo
 check-xgo:
 	@hash xgo > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
 		$(GO) get -u src.techknowlogick.com/xgo; \
 	fi
 
-.PHONY: release-linux
-release-linux:
-	xgo -dest $(DIST)/ -targets 'linux/amd64,linux/386,linux/arm-5,linux/arm-6,linux/arm64,linux/mips64le,linux/mips,linux/mipsle' -out changelog-$(SHORT_VERSION) .
+.PHONY: release-dirs
+release-dirs:
+	mkdir -p $(DIST)/binaries $(DIST)/release
 
 .PHONY: release-windows
 release-windows:
-	xgo -dest $(DIST)/ -targets 'windows/*' -out changelog-$(SHORT_VERSION) .
+	xgo -dest $(DIST)/binaries -ldflags '-linkmode external -extldflags "-static" $(LDFLAGS)' -targets 'windows/*' -out changelog-$(VERSION) .
+ifeq ($(CI),drone)
+	cp /build/* $(DIST)/binaries
+endif
+
+.PHONY: release-linux
+release-linux:
+	xgo -dest $(DIST)/binaries -ldflags '-linkmode external -extldflags "-static" $(LDFLAGS)' -targets 'linux/amd64,linux/386,linux/arm-5,linux/arm-6,linux/arm64,linux/mips64le,linux/mips,linux/mipsle' -out changelog-$(VERSION) .
+ifeq ($(CI),drone)
+	cp /build/* $(DIST)/binaries
+endif
 
 .PHONY: release-darwin
 release-darwin:
-	xgo -dest $(DIST)/ -targets 'darwin/*' -out changelog-$(SHORT_VERSION) .
+	xgo -dest $(DIST)/binaries -tags 'netgo osusergo $(TAGS)' -ldflags '$(LDFLAGS)' -targets 'darwin/*' -out changelog-$(VERSION) .
+ifeq ($(CI),drone)
+	cp /build/* $(DIST)/binaries
+endif
+
+.PHONY: release-copy
+release-copy:
+	cd $(DIST); for file in `find /build -type f -name "*"`; do cp $${file} ./release/; done;
 
 .PHONY: release-check
 release-check:
-	cd $(DIST)/; for file in `find . -type f -name "*"`; do echo "checksumming $${file}" && $(SHASUM) `echo $${file} | sed 's/^..//'` > $${file}.sha256; done;
+	cd $(DIST)/release/; for file in `find . -type f -name "*"`; do echo "checksumming $${file}" && $(SHASUM) `echo $${file} | sed 's/^..//'` > $${file}.sha256; done;
 
 .PHONY: release-compress
 release-compress:
 	@hash gxz > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		go get -u github.com/ulikunitz/xz/cmd/gxz; \
+		$(GO) get -u github.com/ulikunitz/xz/cmd/gxz; \
 	fi
-	cd $(DIST)/; for file in `find . -type f -name "*"`; do echo "compressing $${file}" && gxz -k -9 $${file}; done;
+	cd $(DIST)/release/; for file in `find . -type f -name "*"`; do echo "compressing $${file}" && gxz -k -9 $${file}; done;
