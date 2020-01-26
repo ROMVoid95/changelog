@@ -11,9 +11,7 @@ This tool generates a changelog from PRs based on their milestone and labels.
 
 ## Installation
 
-```
-go get code.gitea.io/changelog
-```
+Download a pre-built binary from our [downloads page](https://dl.gitea.io/changelog-tool/) or clone the source and follow the [building instructions](#building).
 
 ## Configuration
 
