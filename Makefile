@@ -36,7 +36,7 @@ fmt:
 	go fmt ./...
 
 .PHONY: release
-release: release-dirs check-xgo release-windows release-linux release-darwin release-compress release-check
+release: release-dirs check-xgo release-windows release-linux release-darwin release-copy release-compress release-check
 
 .PHONY: check-xgo
 check-xgo:
