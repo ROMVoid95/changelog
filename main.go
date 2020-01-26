@@ -15,9 +15,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const (
+var (
 	// Version of changelog
-	Version = "0.2"
+	Version = "development"
 )
 
 func main() {

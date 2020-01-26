@@ -101,7 +101,7 @@ func (gh *GitHub) Contributors() (ContributorList, error) {
 	}
 
 	contributors := make(ContributorList, 0, len(contributorsMap))
-	for contributor, _ := range contributorsMap {
+	for contributor := range contributorsMap {
 		contributors = append(contributors, Contributor{
 			Name:    contributor,
 			Profile: fmt.Sprintf("https://github.com/%s", contributor),

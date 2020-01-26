@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"regexp"
 
 	"code.gitea.io/changelog/config"
 	"code.gitea.io/changelog/service"
@@ -13,11 +14,16 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var Generate = &cli.Command{
-	Name:   "generate",
-	Usage:  "Generates a changelog",
-	Action: runGenerate,
-}
+var (
+	Generate = &cli.Command{
+		Name:   "generate",
+		Usage:  "Generates a changelog",
+		Action: runGenerate,
+	}
+	labels       = make(map[string]string)
+	entries      = make(map[string][]service.PullRequest)
+	defaultGroup string
+)
 
 func runGenerate(cmd *cli.Context) error {
 	cfg, err := config.New(ConfigPathFlag)
@@ -25,22 +31,7 @@ func runGenerate(cmd *cli.Context) error {
 		return err
 	}
 
-	labels := make(map[string]string)
-	entries := make(map[string][]service.PullRequest)
-	var defaultGroup string
-	for _, g := range cfg.Groups {
-		entries[g.Name] = []service.PullRequest{}
-		for _, l := range g.Labels {
-			labels[l] = g.Name
-		}
-		if g.Default {
-			defaultGroup = g.Name
-		}
-	}
-
-	if defaultGroup == "" {
-		defaultGroup = cfg.Groups[len(cfg.Groups)-1].Name
-	}
+	processGroups(cfg.Groups)
 
 	s, err := service.New(cfg.Service, cfg.Repo, cfg.BaseURL, MilestoneFlag, TokenFlag)
 	if err != nil {
@@ -52,29 +43,7 @@ func runGenerate(cmd *cli.Context) error {
 		return err
 	}
 
-PRLoop: // labels in Go, let's get old school
-	for _, pr := range prs {
-		if pr.Index < AfterFlag {
-			continue
-		}
-
-		var label string
-		for _, lb := range pr.Labels {
-			if cfg.SkipRegex != nil && cfg.SkipRegex.MatchString(lb.Name) {
-				continue PRLoop
-			}
-
-			if g, ok := labels[lb.Name]; ok && len(label) == 0 {
-				label = g
-			}
-		}
-
-		if len(label) > 0 {
-			entries[label] = append(entries[label], pr)
-		} else {
-			entries[defaultGroup] = append(entries[defaultGroup], pr)
-		}
-	}
+	processPRs(prs, cfg.SkipRegex)
 
 	fmt.Println(title)
 	for _, g := range cfg.Groups {
@@ -98,4 +67,46 @@ PRLoop: // labels in Go, let's get old school
 	}
 
 	return nil
+}
+
+func processGroups(groups []config.Group) {
+	for _, g := range groups {
+		entries[g.Name] = []service.PullRequest{}
+		for _, l := range g.Labels {
+			labels[l] = g.Name
+		}
+		if g.Default {
+			defaultGroup = g.Name
+		}
+	}
+
+	if defaultGroup == "" {
+		defaultGroup = groups[len(groups)-1].Name
+	}
+}
+
+func processPRs(prs []service.PullRequest, skip *regexp.Regexp) {
+PRLoop: // labels in Go, let's get old school
+	for _, pr := range prs {
+		if pr.Index < AfterFlag {
+			continue
+		}
+
+		var label string
+		for _, lb := range pr.Labels {
+			if skip != nil && skip.MatchString(lb.Name) {
+				continue PRLoop
+			}
+
+			if g, ok := labels[lb.Name]; ok && len(label) == 0 {
+				label = g
+			}
+		}
+
+		if len(label) > 0 {
+			entries[label] = append(entries[label], pr)
+		} else {
+			entries[defaultGroup] = append(entries[defaultGroup], pr)
+		}
+	}
 }

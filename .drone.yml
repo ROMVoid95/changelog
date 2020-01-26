@@ -1,20 +1,32 @@
 ---
 kind: pipeline
-name: default
+name: compliance
 
 platform:
   os: linux
-  arch: amd64
+  arch: arm64
+
+trigger:
+  event:
+    - pull_request
 
 steps:
-
 - name: build
   pull: always
   image: golang:1.13
   environment:
     GOPROXY: https://goproxy.cn,direct
   commands:
-  - go test -race
+  - go test -race ./...
+  - go build
+
+- name: check
+  pull: always
+  image: golang:1.13
+  environment:
+    GOPROXY: https://goproxy.cn,direct
+  commands:
+    - make lint
 
 - name: discord
   pull: always
@@ -32,6 +44,86 @@ steps:
     - changed
     - failure
 
+---
+kind: pipeline
+name: release
+
+platform:
+  os: linux
+  arch: amd64
+
 trigger:
   branch:
-  - master
+    - master
+  event:
+    - push
+    - tag
+
+steps:
+  - name: fetch-tags
+    pull: always
+    image: docker:git
+    commands:
+      - git fetch --tags --force
+
+  - name: release
+    pull: always
+    image: techknowlogick/xgo:latest
+    environment:
+      GOPROXY: https://goproxy.cn,direct
+    commands:
+      - export PATH=$PATH:$GOPATH/bin
+      - make release
+
+  - name: bucket-master
+    pull: always
+    image: plugins/s3:1
+    settings:
+      acl: public-read
+      bucket: releases
+      endpoint: https://storage.gitea.io
+      path_style: true
+      source: "dist/*"
+      strip_prefix: dist/
+      target: /changelog-tool/master
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+    when:
+      event:
+        - push
+
+  - name: bucket-tag
+    pull: always
+    image: plugins/s3:1
+    settings:
+      acl: public-read
+      bucket: releases
+      endpoint: https://storage.gitea.io
+      path_style: true
+      source: "dist/*"
+      strip_prefix: dist/
+      target: "/changelog-tool/${DRONE_TAG##v}"
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+    when:
+      event:
+        - tag
+
+  - name: gitea
+    pull: always
+    image: plugins/gitea-release:1
+    settings:
+      api_key:
+        from_secret: gitea_token
+      base_url: https://gitea.com
+      files:
+        - "dist/*"
+    when:
+      event:
+        - tag
