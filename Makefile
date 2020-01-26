@@ -1,5 +1,7 @@
 DIST := dist
 GO ?= go
+SED_INPLACE := sed -i
+SHASUM ?= shasum -a 256
 
 ifneq ($(DRONE_TAG),)
 	VERSION ?= $(subst v,,$(DRONE_TAG))
