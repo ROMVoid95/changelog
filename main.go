@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"code.gitea.io/changelog/cmd"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -30,7 +31,6 @@ func main() {
 				Name:        "milestone",
 				Aliases:     []string{"m"},
 				Usage:       "Targeted milestone",
-				Required:    true,
 				Destination: &cmd.MilestoneFlag,
 			},
 			&cli.StringFlag{
@@ -61,6 +61,7 @@ func main() {
 		Commands: []*cli.Command{
 			cmd.Generate,
 			cmd.Contributors,
+			cmd.Init,
 		},
 	}
 

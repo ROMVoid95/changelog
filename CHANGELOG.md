@@ -2,6 +2,7 @@
 
 ## [0.1.0](https://gitea.com/gitea/changelog/pulls?q=&type=all&state=closed&milestone=1231) - 2020-01-25
 * FEATURES
+  * Add init command (#33)
   * Add subcommand to display contributors of milestone (#10)
 * BUGFIXES
   * Fix README about import path (#22)

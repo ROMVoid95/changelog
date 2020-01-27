@@ -5,7 +5,7 @@
 package config
 
 func init() {
-	defaultConfig = []byte(`# The full repository name
+	DefaultConfig = []byte(`# The full repository name
 repo: go-gitea/gitea
 
 # Service type (gitea or github)

@@ -22,7 +22,7 @@ const (
 package config
 
 func init() {
-	defaultConfig = []byte(` + "`" + `%s` + "`" + `)
+	DefaultConfig = []byte(` + "`" + `%s` + "`" + `)
 }
 `
 )

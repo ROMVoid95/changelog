@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var defaultConfig []byte
+var DefaultConfig []byte
 
 // Group is a grouping of PRs
 type Group struct {
@@ -35,7 +35,7 @@ func New(configPath string) (*Config, error) {
 	var err error
 	var configContent []byte
 	if len(configPath) == 0 {
-		configContent = defaultConfig
+		configContent = DefaultConfig
 	} else {
 		configContent, err = ioutil.ReadFile(configPath)
 		if err != nil {
