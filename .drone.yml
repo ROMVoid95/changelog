@@ -123,7 +123,7 @@ steps:
         from_secret: gitea_token
       base_url: https://gitea.com
       files:
-        - "dist/*"
+        - "dist/release/*"
     when:
       event:
         - tag
