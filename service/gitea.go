@@ -123,7 +123,7 @@ func (ge *Gitea) Contributors() (ContributorList, error) {
 }
 
 func (ge *Gitea) milestoneID(client *gitea.Client) (int64, error) {
-	milestones, err := client.ListRepoMilestones(ge.Owner, ge.Repo)
+	milestones, err := client.ListRepoMilestones(ge.Owner, ge.Repo, gitea.ListMilestoneOption{State: gitea.StateAll})
 	if err != nil {
 		return 0, err
 	}
