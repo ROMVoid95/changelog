@@ -51,6 +51,7 @@ func runGenerate(cmd *cli.Context) error {
 	processPRs(prs, cfg.SkipRegex)
 
 	fmt.Println(title)
+	fmt.Println()
 	for _, g := range cfg.Groups {
 		if len(entries[g.Name]) == 0 {
 			continue
