@@ -54,5 +54,9 @@ func New(configPath string) (*Config, error) {
 		}
 	}
 
+	if cfg.Service == "" {
+		cfg.Service = "github"
+	}
+
 	return cfg, nil
 }
