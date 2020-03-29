@@ -40,7 +40,10 @@ func (ge *Gitea) Generate() (string, []PullRequest, error) {
 	perPage := 40
 	for {
 		results, err := client.ListRepoPullRequests(ge.Owner, ge.Repo, gitea.ListPullRequestsOptions{
-			Page:      p,
+			ListOptions: gitea.ListOptions{
+				Page:     p,
+				PageSize: perPage,
+			},
 			State:     "closed",
 			Milestone: milestoneID,
 		})
@@ -91,7 +94,10 @@ func (ge *Gitea) Contributors() (ContributorList, error) {
 	perPage := 100
 	for {
 		results, err := client.ListRepoPullRequests(ge.Owner, ge.Repo, gitea.ListPullRequestsOptions{
-			Page:      p,
+			ListOptions: gitea.ListOptions{
+				Page:     p,
+				PageSize: perPage,
+			},
 			State:     "closed",
 			Milestone: milestoneID,
 		})

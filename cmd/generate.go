@@ -26,7 +26,6 @@ var (
 )
 
 func runGenerate(cmd *cli.Context) error {
-
 	if ConfigPathFlag == "" {
 		ConfigPathFlag = getDefaultConfigFile()
 	}

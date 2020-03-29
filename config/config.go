@@ -30,7 +30,7 @@ type Config struct {
 	SkipRegex  *regexp.Regexp `yaml:"-"`
 }
 
-// Load a config from a path, defaulting to changelog.example.yml
+// New Load a config from a path, defaulting to changelog.example.yml
 func New(configPath string) (*Config, error) {
 	var err error
 	var configContent []byte
