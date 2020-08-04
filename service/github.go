@@ -17,18 +17,24 @@ type GitHub struct {
 	Milestone string
 	Token     string
 	Repo      string
+	Issues    bool
 }
 
 // Generate returns a GitHub changelog
-func (gh *GitHub) Generate() (string, []PullRequest, error) {
+func (gh *GitHub) Generate() (string, []Entry, error) {
 	tagURL := fmt.Sprintf("## [%s](https://github.com/%s/releases/tag/v%s) - %s", gh.Milestone, gh.Repo, gh.Milestone, time.Now().Format("2006-01-02"))
 
 	client := github.NewClient(nil)
 	ctx := context.Background()
 
-	prs := make([]PullRequest, 0)
+	prs := make([]Entry, 0)
 
-	query := fmt.Sprintf(`repo:%s is:merged milestone:"%s"`, gh.Repo, gh.Milestone)
+	state := "merged"
+	if gh.Issues {
+		state = "closed"
+	}
+
+	query := fmt.Sprintf(`repo:%s is:%s milestone:"%s"`, gh.Repo, state, gh.Milestone)
 	p := 1
 	perPage := 100
 	for {
@@ -43,9 +49,11 @@ func (gh *GitHub) Generate() (string, []PullRequest, error) {
 		}
 		p++
 
+		isPull := !(gh.Issues)
+
 		for _, pr := range result.Issues {
-			if pr.IsPullRequest() {
-				p := PullRequest{
+			if pr.IsPullRequest() == isPull {
+				p := Entry{
 					Title: pr.GetTitle(),
 					Index: int64(pr.GetNumber()),
 				}

@@ -18,20 +18,26 @@ type Gitea struct {
 	BaseURL   string
 	Owner     string
 	Repo      string
+	Issues    bool
 }
 
 // Generate returns a Gitea changelog
-func (ge *Gitea) Generate() (string, []PullRequest, error) {
+func (ge *Gitea) Generate() (string, []Entry, error) {
 	client := gitea.NewClient(ge.BaseURL, ge.Token)
 
-	prs := make([]PullRequest, 0)
+	entries := make([]Entry, 0)
 
 	milestoneID, err := ge.milestoneID(client)
 	if err != nil {
 		return "", nil, err
 	}
 
-	tagURL := fmt.Sprintf("## [%s](%s/%s/%s/pulls?q=&type=all&state=closed&milestone=%d) - %s", ge.Milestone, ge.BaseURL, ge.Owner, ge.Repo, milestoneID, time.Now().Format("2006-01-02"))
+	from := "pulls"
+	if ge.Issues {
+		from = "issues"
+	}
+
+	tagURL := fmt.Sprintf("## [%s](%s/%s/%s/%s?q=&type=all&state=closed&milestone=%d) - %s", ge.Milestone, ge.BaseURL, ge.Owner, ge.Repo, from, milestoneID, time.Now().Format("2006-01-02"))
 
 	p := 1
 	// https://github.com/go-gitea/gitea/blob/d92781bf941972761177ac9e07441f8893758fd3/models/repo.go#L63
@@ -39,44 +45,61 @@ func (ge *Gitea) Generate() (string, []PullRequest, error) {
 	// FIXME Gitea has this hard-coded at 40
 	perPage := 40
 	for {
-		results, err := client.ListRepoPullRequests(ge.Owner, ge.Repo, gitea.ListPullRequestsOptions{
+		options := gitea.ListIssueOption{
 			ListOptions: gitea.ListOptions{
 				Page:     p,
 				PageSize: perPage,
 			},
-			State:     "closed",
-			Milestone: milestoneID,
-		})
+			Milestones: []string{ge.Milestone},
+			State:      gitea.StateClosed,
+			Type:       gitea.IssueTypePull,
+		}
+		if ge.Issues {
+			options.Type = gitea.IssueTypeIssue
+		}
+
+		issues, err := client.ListRepoIssues(ge.Owner, ge.Repo, options)
 		if err != nil {
 			return "", nil, err
 		}
-		p++
 
-		for _, pr := range results {
-			if pr != nil && pr.HasMerged {
-				p := PullRequest{
-					Title: pr.Title,
-					Index: pr.Index,
+		for _, issue := range issues {
+			if issue != nil {
+				if options.Type == gitea.IssueTypePull && issue.PullRequest != nil && !(issue.PullRequest.HasMerged) {
+					continue
 				}
 
-				labels := make([]Label, len(pr.Labels))
-				for idx, lbl := range pr.Labels {
-					labels[idx] = Label{
-						Name: lbl.Name,
-					}
-				}
-				p.Labels = labels
-
-				prs = append(prs, p)
+				entry := convertToEntry(*issue)
+				entries = append(entries, entry)
 			}
 		}
 
-		if len(results) != perPage {
+		if len(issues) != perPage {
 			break
+		}
+
+		p++
+	}
+
+	return tagURL, entries, nil
+}
+
+func convertToEntry(issue gitea.Issue) Entry {
+	entry := Entry{
+		Index: issue.Index,
+		Title: issue.Title,
+	}
+
+	labels := make([]Label, len(issue.Labels))
+	for idx, lbl := range issue.Labels {
+		labels[idx] = Label{
+			Name: lbl.Name,
 		}
 	}
 
-	return tagURL, prs, nil
+	entry.Labels = labels
+
+	return entry
 }
 
 // Contributors returns a list of contributors from Gitea

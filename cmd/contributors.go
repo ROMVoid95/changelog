@@ -31,7 +31,7 @@ func runContributors(cmd *cli.Context) error {
 		return err
 	}
 
-	s, err := service.New(cfg.Service, cfg.Repo, cfg.BaseURL, MilestoneFlag, TokenFlag)
+	s, err := service.New(cfg.Service, cfg.Repo, cfg.BaseURL, MilestoneFlag, TokenFlag, IssuesFlag)
 	if err != nil {
 		return err
 	}

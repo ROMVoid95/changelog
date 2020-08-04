@@ -15,6 +15,7 @@ var (
 	TokenFlag      string
 	DetailsFlag    bool
 	AfterFlag      int64
+	IssuesFlag     bool
 )
 
 func getDefaultConfigFile() string {

@@ -57,6 +57,12 @@ func main() {
 				Usage:       "Only select PRs after a given index (continuing a previous changelog)",
 				Destination: &cmd.AfterFlag,
 			},
+			&cli.BoolFlag{
+				Name:        "issues",
+				Aliases:     []string{"i"},
+				Usage:       "Generate changelog from issues (otherwise from pulls)",
+				Destination: &cmd.IssuesFlag,
+			},
 		},
 		Commands: []*cli.Command{
 			cmd.Generate,

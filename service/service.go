@@ -11,14 +11,15 @@ import (
 
 const defaultGitea = "https://gitea.com"
 
-// Load returns a service from a string
-func New(serviceType, repo, baseURL, milestone, token string) (Service, error) {
+// New returns a service from a string
+func New(serviceType, repo, baseURL, milestone, token string, issues bool) (Service, error) {
 	switch strings.ToLower(serviceType) {
 	case "github":
 		return &GitHub{
 			Milestone: milestone,
 			Token:     token,
 			Repo:      repo,
+			Issues:    issues,
 		}, nil
 	case "gitea":
 		ownerRepo := strings.Split(repo, "/")
@@ -31,6 +32,7 @@ func New(serviceType, repo, baseURL, milestone, token string) (Service, error) {
 			BaseURL:   baseURL,
 			Owner:     ownerRepo[0],
 			Repo:      ownerRepo[1],
+			Issues:    issues,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown service type %s", serviceType)
@@ -39,7 +41,7 @@ func New(serviceType, repo, baseURL, milestone, token string) (Service, error) {
 
 // Service defines how a struct can be a Changelog Service
 type Service interface {
-	Generate() (string, []PullRequest, error)
+	Generate() (string, []Entry, error)
 	Contributors() (ContributorList, error)
 }
 
@@ -48,8 +50,8 @@ type Label struct {
 	Name string
 }
 
-// PullRequest is the minimum information needed to make a changelog entry
-type PullRequest struct {
+// Entry is the minimum information needed to make a changelog entry
+type Entry struct {
 	Title  string
 	Index  int64
 	Labels []Label

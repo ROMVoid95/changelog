@@ -21,7 +21,7 @@ var (
 		Action: runGenerate,
 	}
 	labels       = make(map[string]string)
-	entries      = make(map[string][]service.PullRequest)
+	entries      = make(map[string][]service.Entry)
 	defaultGroup string
 )
 
@@ -37,7 +37,7 @@ func runGenerate(cmd *cli.Context) error {
 
 	processGroups(cfg.Groups)
 
-	s, err := service.New(cfg.Service, cfg.Repo, cfg.BaseURL, MilestoneFlag, TokenFlag)
+	s, err := service.New(cfg.Service, cfg.Repo, cfg.BaseURL, MilestoneFlag, TokenFlag, IssuesFlag)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func runGenerate(cmd *cli.Context) error {
 
 func processGroups(groups []config.Group) {
 	for _, g := range groups {
-		entries[g.Name] = []service.PullRequest{}
+		entries[g.Name] = []service.Entry{}
 		for _, l := range g.Labels {
 			labels[l] = g.Name
 		}
@@ -90,7 +90,7 @@ func processGroups(groups []config.Group) {
 	}
 }
 
-func processPRs(prs []service.PullRequest, skip *regexp.Regexp) {
+func processPRs(prs []service.Entry, skip *regexp.Regexp) {
 PRLoop: // labels in Go, let's get old school
 	for _, pr := range prs {
 		if pr.Index < AfterFlag {
