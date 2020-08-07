@@ -37,7 +37,7 @@ func (ge *Gitea) Generate() (string, []Entry, error) {
 		from = "issues"
 	}
 
-	tagURL := fmt.Sprintf("## [%s](%s/%s/%s/%s?q=&type=all&state=closed&milestone=%d) - %s", ge.Milestone, ge.BaseURL, ge.Owner, ge.Repo, from, milestoneID, time.Now().Format("2006-01-02"))
+	tagURL := getGiteaTagURL(client, ge.BaseURL, ge.Owner, ge.Repo, ge.Milestone, from, milestoneID)
 
 	p := 1
 	// https://github.com/go-gitea/gitea/blob/d92781bf941972761177ac9e07441f8893758fd3/models/repo.go#L63
@@ -82,6 +82,13 @@ func (ge *Gitea) Generate() (string, []Entry, error) {
 	}
 
 	return tagURL, entries, nil
+}
+
+func getGiteaTagURL(c *gitea.Client, baseURL, owner, repo, mileName, from string, mileID int64) string {
+	if err := c.CheckServerVersionConstraint(">=1.12"); err != nil {
+		return fmt.Sprintf("## [%s](%s/%s/%s/%s?q=&type=all&state=closed&milestone=%d) - %s", mileName, baseURL, owner, repo, from, mileID, time.Now().Format("2006-01-02"))
+	}
+	return fmt.Sprintf("## [%s](%s/%s/%s/releases/tag/%s) - %s", mileName, baseURL, owner, repo, mileName, time.Now().Format("2006-01-02"))
 }
 
 func convertToEntry(issue gitea.Issue) Entry {
