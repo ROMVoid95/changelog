@@ -3,7 +3,7 @@ module code.gitea.io/changelog
 go 1.13
 
 require (
-	code.gitea.io/sdk/gitea v0.12.1
+	code.gitea.io/sdk/gitea v0.13.0
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/google/go-github/v32 v32.1.0
 	github.com/hashicorp/go-version v1.2.1 // indirect
