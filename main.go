@@ -24,7 +24,7 @@ var (
 func main() {
 	app := &cli.App{
 		Name:    "changelog",
-		Usage:   "Changelog generator for Gitea",
+		Usage:   "Changelog tools for Gitea",
 		Version: Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{

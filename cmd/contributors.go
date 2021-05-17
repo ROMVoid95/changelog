@@ -21,7 +21,6 @@ var Contributors = &cli.Command{
 }
 
 func runContributors(cmd *cli.Context) error {
-
 	if ConfigPathFlag == "" {
 		ConfigPathFlag = getDefaultConfigFile()
 	}

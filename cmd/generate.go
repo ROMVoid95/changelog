@@ -17,7 +17,7 @@ import (
 var (
 	Generate = &cli.Command{
 		Name:   "generate",
-		Usage:  "Generates a changelog",
+		Usage:  "Generates a changelog for a special milestone",
 		Action: runGenerate,
 	}
 	labels       = make(map[string]string)
