@@ -13,7 +13,7 @@ trigger:
 steps:
 - name: build
   pull: always
-  image: golang:1.13
+  image: golang:1.17
   environment:
     GOPROXY: https://goproxy.cn,direct
   commands:
@@ -22,7 +22,7 @@ steps:
 
 - name: check
   pull: always
-  image: golang:1.13
+  image: golang:1.17
   environment:
     GOPROXY: https://goproxy.cn,direct
   commands:
@@ -77,10 +77,10 @@ steps:
 
   - name: bucket-master
     pull: always
-    image: plugins/s3:1
+    image: woodpeckerci/plugin-s3:latest
     settings:
       acl: public-read
-      bucket: releases
+      bucket: gitea-artifacts
       endpoint: https://storage.gitea.io
       path_style: true
       source: "dist/release/*"
@@ -97,10 +97,10 @@ steps:
 
   - name: bucket-tag
     pull: always
-    image: plugins/s3:1
+    image: woodpeckerci/plugin-s3:latest
     settings:
       acl: public-read
-      bucket: releases
+      bucket: gitea-artifacts
       endpoint: https://storage.gitea.io
       path_style: true
       source: "dist/release/*"
